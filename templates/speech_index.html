@@ -341,6 +341,7 @@
                 this.mediaRecorder = null;
                 this.audioChunks = [];
                 this.isRecording = false;
+                this.recordingStartTime = null;
                 this.sessionId = this.generateSessionId();
                 
                 this.initializeElements();
@@ -444,6 +445,7 @@
                     this.mediaRecorder.start(1000); // Chunk a cada 1 segundo
                     console.log('🔴 Gravação iniciada');
                     this.isRecording = true;
+                    this.recordingStartTime = Date.now(); // Marca o tempo de início
                     
                     this.recordBtn.style.display = 'none';
                     this.stopBtn.style.display = 'block';
@@ -459,6 +461,16 @@
 
             stopRecording() {
                 if (this.mediaRecorder && this.isRecording) {
+                    // Verificar se houve tempo suficiente de gravação
+                    const recordingTime = Date.now() - this.recordingStartTime;
+                    console.log('⏱️ Tempo de gravação:', recordingTime, 'ms');
+                    
+                    if (recordingTime < 500) { // Menos de 0.5 segundos
+                        this.showStatus('⚠️ Gravação muito curta. Tente falar por mais tempo.', 'error');
+                        // Não para a gravação, deixa continuar
+                        return;
+                    }
+                    
                     this.mediaRecorder.stop();
                     this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
                     this.isRecording = false;
@@ -487,6 +499,11 @@
                         throw new Error('Arquivo de áudio vazio');
                     }
                     
+                    // Verificar se o áudio tem duração mínima (pelo menos 100 bytes)
+                    if (audioBlob.size < 100) {
+                        throw new Error('Gravação muito curta. Tente falar por mais tempo.');
+                    }
+                    
                     // Criar FormData com informações detalhadas
                     const formData = new FormData();
                     formData.append('audio', audioBlob, 'recording.webm');
@@ -502,6 +519,10 @@
                     
                     console.log('📥 Resposta da transcrição:', transcriptResponse.status);
                     
+                    if (!transcriptResponse.ok) {
+                        throw new Error(`Erro HTTP: ${transcriptResponse.status}`);
+                    }
+                    
                     const transcriptData = await transcriptResponse.json();
                     
                     if (transcriptData.error) {
@@ -511,6 +532,10 @@
                     
                     const transcript = transcriptData.transcript;
                     console.log('✅ Transcrição recebida:', transcript);
+                    
+                    if (!transcript || transcript.trim() === '') {
+                        throw new Error('Não foi possível transcrever o áudio. Tente falar mais claramente.');
+                    }
                     
                     // Mostrar transcrição
                     this.transcriptDisplay.style.display = 'block';
