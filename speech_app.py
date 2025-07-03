@@ -145,82 +145,36 @@ class SpeechFinanceAssistantWeb:
             return None
     
     def transcribe_audio(self, audio_file):
-        """Transcreve áudio usando Whisper com fallback"""
+        """Transcreve áudio usando Whisper"""
         try:
             print(f"🎙️ Iniciando transcrição de áudio...")
             
-            # Garante que o arquivo está no início
-            audio_file.seek(0)
-            
-            # Lê o conteúdo do arquivo
-            audio_data = audio_file.read()
-            
             # Verifica se o arquivo tem conteúdo
-            if len(audio_data) == 0:
+            audio_file.seek(0, 2)  # Vai para o final
+            file_size = audio_file.tell()
+            audio_file.seek(0)  # Volta para o início
+            
+            if file_size == 0:
                 return "Erro: Arquivo de áudio vazio"
             
             print(f"📁 Arquivo: {audio_file.filename}")
-            print(f"📊 Tamanho: {len(audio_data)} bytes")
+            print(f"📊 Tamanho: {file_size} bytes")
             print(f"🎵 Tipo: {audio_file.content_type}")
             
-            # Cria um arquivo temporário para garantir compatibilidade
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as temp_file:
-                temp_file.write(audio_data)
-                temp_file_path = temp_file.name
+            # Transcreve diretamente com o arquivo recebido
+            transcript = self.client.audio.transcriptions.create(
+                model="whisper-1",
+                file=audio_file,
+                language="pt"
+            )
             
-            print(f"📁 Arquivo temporário criado: {temp_file_path}")
-            
-            try:
-                # Tenta usar o Whisper real primeiro
-                with open(temp_file_path, 'rb') as audio_stream:
-                    transcript = self.client.audio.transcriptions.create(
-                        model="whisper-1",
-                        file=audio_stream,
-                        language="pt",
-                        response_format="text"
-                    )
-                
-                # Remove o arquivo temporário
-                os.unlink(temp_file_path)
-                
-                # Processa a resposta dependendo do formato
-                if hasattr(transcript, 'text'):
-                    result_text = transcript.text.strip()
-                else:
-                    result_text = str(transcript).strip()
-                
-                print(f"✅ Transcrição Whisper concluída: {result_text[:50]}...")
-                return result_text
-                
-            except Exception as whisper_error:
-                print(f"⚠️ Whisper falhou: {whisper_error}")
-                print("🔄 Usando fallback com transcrição simulada...")
-                
-                # Remove o arquivo temporário
-                os.unlink(temp_file_path)
-                
-                # Fallback: simula transcrição com perguntas financeiras comuns
-                sample_questions = [
-                    "Qual o preço da Petrobras hoje?",
-                    "Como está o Bitcoin?",
-                    "Resumo do mercado brasileiro",
-                    "Preço do dólar hoje",
-                    "Como está o Ibovespa?",
-                    "Análise da Vale",
-                    "Preço das ações do Itaú",
-                    "Cotação do Ethereum"
-                ]
-                
-                # Seleciona uma pergunta baseada no tamanho do arquivo
-                question_index = (len(audio_data) // 100) % len(sample_questions)
-                simulated_transcript = sample_questions[question_index]
-                
-                print(f"✅ Transcrição simulada: {simulated_transcript}")
-                return f"[SIMULADO] {simulated_transcript}"
+            result_text = transcript.text.strip()
+            print(f"✅ Transcrição: {result_text}")
+            return result_text
             
         except Exception as e:
             print(f"❌ Erro na transcrição: {str(e)}")
-            return f"Erro na transcrição: {str(e)}"
+            raise e
     
     def text_to_speech(self, text):
         """Converte texto em fala"""
@@ -393,18 +347,19 @@ def transcribe():
         print(f"📏 Tamanho do arquivo: {len(content)} bytes")
         
         # Transcreve o áudio
-        transcript = speech_assistant.transcribe_audio(audio_file)
-        
-        if transcript.startswith("Erro"):
-            print(f"❌ Erro na transcrição: {transcript}")
-            return jsonify({'error': transcript}), 500
-        
-        print(f"✅ Transcrição bem-sucedida: {transcript[:50]}...")
-        
-        return jsonify({
-            'transcript': transcript,
-            'status': 'success'
-        })
+        try:
+            transcript = speech_assistant.transcribe_audio(audio_file)
+            
+            print(f"✅ Transcrição bem-sucedida: {transcript[:50]}...")
+            
+            return jsonify({
+                'transcript': transcript,
+                'status': 'success'
+            })
+            
+        except Exception as transcribe_error:
+            print(f"❌ Erro na transcrição: {transcribe_error}")
+            return jsonify({'error': f'Erro na transcrição: {str(transcribe_error)}'}), 500
         
     except Exception as e:
         print(f"❌ Erro no endpoint /transcribe: {str(e)}")
