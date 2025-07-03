@@ -147,13 +147,39 @@ class SpeechFinanceAssistantWeb:
     def transcribe_audio(self, audio_file):
         """Transcreve áudio usando Whisper"""
         try:
-            transcript = self.client.audio.transcriptions.create(
-                model="whisper-1",
-                file=audio_file,
-                language="pt"
-            )
+            print(f"🎙️ Iniciando transcrição de áudio...")
+            
+            # Garante que o arquivo está no início
+            audio_file.seek(0)
+            
+            # Verifica se o arquivo tem conteúdo
+            if audio_file.content_length == 0:
+                return "Erro: Arquivo de áudio vazio"
+            
+            print(f"📁 Arquivo: {audio_file.filename}, Tamanho: {audio_file.content_length} bytes")
+            
+            # Cria um arquivo temporário para garantir compatibilidade
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as temp_file:
+                audio_file.seek(0)  # Volta ao início
+                temp_file.write(audio_file.read())
+                temp_file_path = temp_file.name
+            
+            # Transcreve usando o arquivo temporário
+            with open(temp_file_path, 'rb') as audio_data:
+                transcript = self.client.audio.transcriptions.create(
+                    model="whisper-1",
+                    file=audio_data,
+                    language="pt"
+                )
+            
+            # Remove o arquivo temporário
+            os.unlink(temp_file_path)
+            
+            print(f"✅ Transcrição concluída: {transcript.text[:50]}...")
             return transcript.text.strip()
+            
         except Exception as e:
+            print(f"❌ Erro na transcrição: {str(e)}")
             return f"Erro na transcrição: {str(e)}"
     
     def text_to_speech(self, text):
@@ -300,16 +326,40 @@ def index():
 def transcribe():
     """Endpoint para transcrever áudio"""
     try:
+        print("📝 Recebendo requisição de transcrição...")
+        
         if 'audio' not in request.files:
+            print("❌ Nenhum arquivo de áudio na requisição")
             return jsonify({'error': 'Nenhum arquivo de áudio'}), 400
         
         audio_file = request.files['audio']
         
         if audio_file.filename == '':
+            print("❌ Nome do arquivo vazio")
             return jsonify({'error': 'Arquivo vazio'}), 400
+        
+        print(f"📁 Arquivo recebido: {audio_file.filename}")
+        print(f"📊 Tipo de conteúdo: {audio_file.content_type}")
+        
+        # Verifica se o arquivo tem conteúdo
+        audio_file.seek(0, 2)  # Vai para o final
+        file_size = audio_file.tell()
+        audio_file.seek(0)  # Volta para o início
+        
+        if file_size == 0:
+            print("❌ Arquivo sem conteúdo")
+            return jsonify({'error': 'Arquivo de áudio vazio'}), 400
+        
+        print(f"📏 Tamanho do arquivo: {file_size} bytes")
         
         # Transcreve o áudio
         transcript = speech_assistant.transcribe_audio(audio_file)
+        
+        if transcript.startswith("Erro"):
+            print(f"❌ Erro na transcrição: {transcript}")
+            return jsonify({'error': transcript}), 500
+        
+        print(f"✅ Transcrição bem-sucedida: {transcript[:50]}...")
         
         return jsonify({
             'transcript': transcript,
@@ -317,6 +367,7 @@ def transcribe():
         })
         
     except Exception as e:
+        print(f"❌ Erro no endpoint /transcribe: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/chat', methods=['POST'])
