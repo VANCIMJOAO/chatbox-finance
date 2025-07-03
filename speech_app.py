@@ -159,6 +159,8 @@ class SpeechFinanceAssistantWeb:
     def text_to_speech(self, text):
         """Converte texto em fala"""
         try:
+            print(f"🔊 Iniciando TTS para: {text[:50]}...")
+            
             response = self.client.audio.speech.create(
                 model="tts-1",
                 voice="alloy",
@@ -166,10 +168,13 @@ class SpeechFinanceAssistantWeb:
                 speed=1.0
             )
             
+            print(f"✅ TTS bem-sucedido - {len(response.content)} bytes")
+            
             # Retorna os bytes do áudio
             return response.content
             
         except Exception as e:
+            print(f"❌ Erro no TTS: {str(e)}")
             return None
     
     def _handle_function_call(self, tool_call):
@@ -346,16 +351,23 @@ def speak():
         if not text:
             return jsonify({'error': 'Texto vazio'}), 400
         
+        print(f"🔊 Convertendo texto para fala: {text[:50]}...")
+        
         # Converte texto em áudio
         audio_content = speech_assistant.text_to_speech(text)
         
         if audio_content is None:
+            print("❌ Erro ao gerar áudio - audio_content é None")
             return jsonify({'error': 'Erro ao gerar áudio'}), 500
+        
+        print(f"✅ Áudio gerado com sucesso - {len(audio_content)} bytes")
         
         # Cria arquivo temporário
         temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.mp3')
         temp_file.write(audio_content)
         temp_file.close()
+        
+        print(f"📁 Arquivo temporário criado: {temp_file.name}")
         
         # Retorna o arquivo de áudio
         return send_file(
@@ -366,6 +378,7 @@ def speak():
         )
         
     except Exception as e:
+        print(f"❌ Erro no endpoint /speak: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/clear', methods=['POST'])
