@@ -20,6 +20,8 @@ Um chatbot especializado em finanças que utiliza a **OpenAI Assistant API** com
 - 🇧🇷 **Foco no Brasil**: Especializado em mercado brasileiro (B3, Bovespa)
 - 📈 **Educação Financeira**: Explica conceitos de forma didática
 - 🔄 **Contexto Persistente**: Mantém memória da conversa
+- 🎙️ **Reconhecimento de Fala**: Converse por voz usando Whisper AI
+- 🔊 **Text-to-Speech**: Respostas faladas com voz natural
 
 ## 📸 **Screenshots**
 
@@ -29,6 +31,8 @@ Um chatbot especializado em finanças que utiliza a **OpenAI Assistant API** com
 📱 Totalmente responsivo
 💡 Indicadores visuais de digitação
 🗂️ Suporte a múltiplas sessões
+🎙️ Gravação de áudio integrada
+🔊 Reprodução de respostas faladas
 ```
 
 ### Funcionalidades
@@ -38,7 +42,21 @@ Um chatbot especializado em finanças que utiliza a **OpenAI Assistant API** com
 🔍 Busca inteligente de ações
 💰 Resumo de mercado
 🎓 Educação financeira integrada
+🎙️ Interação por voz natural
+🔊 Respostas em áudio
 ```
+
+## 🎙️ **Recursos de Fala**
+
+### Reconhecimento de Fala
+- **Whisper AI**: Transcrição precisa em português
+- **Gravação Web**: Interface para captura de áudio
+- **Fallback de Texto**: Sempre disponível como alternativa
+
+### Text-to-Speech
+- **Voz Natural**: API TTS da OpenAI
+- **Controle de Volume**: Ajuste personalizado
+- **Áudio Responsivo**: Reprodução automática ou manual
 
 ## 🛠️ **Instalação**
 
@@ -59,6 +77,14 @@ source .venv/bin/activate  # Linux/Mac
 ### 3. Instale dependências
 ```bash
 pip install -r requirements.txt
+
+# Para reconhecimento de fala no Linux/Ubuntu
+sudo apt-get update
+sudo apt-get install python3-pyaudio portaudio19-dev
+
+# Ou use o script de instalação
+chmod +x install_speech.sh
+./install_speech.sh
 ```
 
 ### 4. Configure API Key
@@ -69,7 +95,13 @@ cp .env.example .env
 
 ### 5. Execute o projeto
 ```bash
-# Versão Web (recomendada)
+# Versão Web com Reconhecimento de Fala (NOVO!)
+python speech_app.py
+
+# Versão Terminal com Fala
+python speech_finance_assistant.py
+
+# Versão Web tradicional
 python app_assistant.py
 
 # Versão Terminal
@@ -80,7 +112,31 @@ python app.py              # Web com function calling
 python chatbot.py          # Terminal simples
 ```
 
+## 🎙️ **Como Usar o Reconhecimento de Fala**
+
+### Interface Web
+1. **Acesse**: `http://localhost:5000`
+2. **Permita**: Acesso ao microfone quando solicitado
+3. **Grave**: Clique em "🎤 Gravar Pergunta"
+4. **Fale**: Sua pergunta sobre finanças
+5. **Ouça**: A resposta será reproduzida automaticamente
+
+### Terminal
+```bash
+python speech_finance_assistant.py
+# Pressione Enter para gravar
+# Fale sua pergunta
+# Pressione Enter novamente para parar
+```
+
 ## 💡 **Exemplos de Uso**
+
+### Consultas por Voz
+```
+🎙️ "Qual o preço da Petrobras hoje?"
+🎙️ "Como está o Bitcoin?"
+🎙️ "Resumo do mercado brasileiro"
+```
 
 ### Consultas Básicas
 ```

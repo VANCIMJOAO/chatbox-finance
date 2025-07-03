@@ -1,5 +1,39 @@
 # 🎉 CHANGELOG - FinanceBot AI
 
+## 🆕 **Versão 3.0 - Speech Recognition** (Julho 2025)
+
+### ✨ **Principais Novidades**
+
+#### 🎙️ **Reconhecimento de Fala**
+- ✅ **Whisper AI**: Transcrição precisa em português brasileiro
+- ✅ **Interface Web**: Gravação de áudio diretamente no navegador
+- ✅ **Qualidade Profissional**: Cancelamento de eco e redução de ruído
+- ✅ **Fallback de Texto**: Sempre disponível como alternativa
+
+#### 🔊 **Text-to-Speech**
+- ✅ **Voz Natural**: API TTS da OpenAI com voz "alloy"
+- ✅ **Controle de Volume**: Ajuste personalizado pelo usuário
+- ✅ **Reprodução Automática**: Resposta falada imediata
+- ✅ **Áudio Responsivo**: Compatível com todos os dispositivos
+
+#### 🎯 **Experiência de Usuário**
+- ✅ **Interface Intuitiva**: Botões visuais para gravação e parada
+- ✅ **Status em Tempo Real**: Indicadores de processo (gravando, transcrevendo, falando)
+- ✅ **Transcrição Visível**: Mostra o que foi entendido antes de processar
+- ✅ **Controles de Áudio**: Player integrado com controle de volume
+
+#### 📱 **Compatibilidade**
+- ✅ **Cross-Platform**: Funciona em navegadores modernos
+- ✅ **Permissões**: Gestão automática de acesso ao microfone
+- ✅ **Erro Handling**: Tratamento robusto de erros de áudio
+- ✅ **Mobile-First**: Design otimizado para dispositivos móveis
+
+### 🛠️ **Melhorias Técnicas**
+- ✅ **Ambiente Configurável**: Suporte a arquivo .env
+- ✅ **Dependências Atualizadas**: Novos pacotes para áudio
+- ✅ **Script de Instalação**: Automatização da configuração
+- ✅ **Documentação Expandida**: Guias completos de uso
+
 ## 🆕 **Versão 2.0 - OpenAI Assistant API** (Julho 2025)
 
 ### ✨ **Principais Novidades**
